@@ -14,6 +14,7 @@ from prometheus_fastapi_instrumentator import Instrumentator
 from .routes import gists_router, healthchecker_router
 from .settings import get_settings
 
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("app.main")
 
 
@@ -37,21 +38,25 @@ def create_app() -> FastAPI:
         aiocache Redis backend.
         """
         settings = get_settings()
-        prefix = settings.app.redis_users_namespace
+        if not settings.app.redis_cache_enabled and not settings.app.redis_url:
+            logger.info("Redis caching not enabled; skipping FastAPICache init")
+            return
 
-        if settings.app.redis_cache_enabled and settings.app.redis_url:
-            # Configure aiocache to use Redis backend with the provided URL
-            caches.set_config(
-                {
-                    "default": {
-                        "cache": "aiocache.RedisCache",
-                        "endpoint": settings.app.redis_url,
-                        "port": 6379,
-                    }
+        prefix = settings.app.redis_users_namespace
+        # if settings.app.redis_cache_enabled and settings.app.redis_url:
+        # Configure aiocache to use Redis backend with the provided URL
+        caches.set_config(
+            {
+                "default": {
+                    "cache": "aiocache.RedisCache",
+                    "endpoint": get_settings().app.redis_url,
+                    "port": 6379,
                 }
-            )
-            FastAPICache.init(RedisBackend(Cache), prefix=prefix)
-            logger.info("FastAPICache initialized with Redis backend")
+            }
+        )
+
+        FastAPICache.init(RedisBackend(Cache), prefix=prefix)
+        logger.info("FastAPICache initialized with Redis backend")
 
     app.add_event_handler("startup", _init_cache)
     return app

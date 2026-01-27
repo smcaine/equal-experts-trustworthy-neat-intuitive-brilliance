@@ -120,4 +120,6 @@ Notes
 
 - implement middleware logic to improve logging, rate limiting + more..
 - implement CORS logic to improve security
-- Implement more structured logging and standardize throughout the app
+- implement more structured logging and standardize throughout the app
+- add lifespan to clean up cache
+- add more tests, test cache settings

@@ -7,6 +7,7 @@ from .cache import cache_response
 from .settings import get_settings
 from .utils import paginate_git_pages
 
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("app.routes")
 GITHUB_API_URL = "https://api.github.com"
 
