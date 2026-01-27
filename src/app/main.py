@@ -5,12 +5,11 @@ Application entrypoint and factory for the Gists FastAPI app.
 import logging
 
 import uvicorn
-from fastapi import FastAPI
-from prometheus_fastapi_instrumentator import Instrumentator
-from fastapi_cache import FastAPICache
-from fastapi_cache.backends.inmemory import InMemoryBackend
-from fastapi_cache.backends.aiocache import AiocacheBackend
 from aiocache import Cache, caches
+from fastapi import FastAPI
+from fastapi_cache import FastAPICache
+from fastapi_cache.backends.redis import RedisBackend
+from prometheus_fastapi_instrumentator import Instrumentator
 
 from .routes import gists_router, healthchecker_router
 from .settings import get_settings
@@ -35,7 +34,7 @@ def create_app() -> FastAPI:
         """Initialize FastAPICache on application startup.
 
         Uses the application's settings to decide whether to configure an
-        aiocache Redis backend or fall back to an in-memory backend.
+        aiocache Redis backend.
         """
         settings = get_settings()
         prefix = settings.app.redis_users_namespace
@@ -51,11 +50,8 @@ def create_app() -> FastAPI:
                     }
                 }
             )
-            FastAPICache.init(AiocacheBackend(Cache), prefix=prefix)
+            FastAPICache.init(RedisBackend(Cache), prefix=prefix)
             logger.info("FastAPICache initialized with Redis backend")
-        else:
-            FastAPICache.init(InMemoryBackend(), prefix=prefix)
-            logger.info("FastAPICache initialized with in-memory backend")
 
     app.add_event_handler("startup", _init_cache)
     return app

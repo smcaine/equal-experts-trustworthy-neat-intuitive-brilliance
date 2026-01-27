@@ -54,7 +54,14 @@ Endpoints
 - Gists: `GET /users/{username}` — returns paginated gist pages under the `results` key
 - Metrics: `GET /metrics` — Prometheus metrics exposed by Instrumentator
 
-5. (Optional) - Run Redis cache and enable Redis caching for api responses from Github
+5. (Optional) - Run Redis cache and enable Redis caching for api responses from Github:
+
+```
+    APP__REDIS_CACHE_ENABLED=True
+    APP__REDIS_CACHE_TTL=300
+    APP__REDIS_URL=<REDIS:redis-url>
+    APP__REDIS_USERS_NAMESPACE=users
+```
 
 
 ### Running tests

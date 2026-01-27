@@ -28,13 +28,13 @@ class CoreSettingsModel(BaseModel):
     """
 
     name: str = Field(default="Gists FastAPI Application")
-    redis_cache_enabled: bool = Field(default=False)
-    redis_cache_ttl: int = Field(default=300)
+    redis_cache_enabled: Optional[bool] = Field(default=False)
+    redis_cache_ttl: Optional[int] = Field(default=300)
     redis_url: Optional[str] = Field(default=None)
-    redis_users_namespace: str = Field(default="users")
-    port: int = Field(default=8080)
+    redis_users_namespace: Optional[str] = Field(default="users")
+    port: Optional[int] = Field(default=8080)
     github_token: Optional[str] = Field(default=None)
-    max_per_page: int = Field(default=100)
+    max_per_page: Optional[int] = Field(default=100)
 
     @computed_field
     def github_header(self) -> dict:
