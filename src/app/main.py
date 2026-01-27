@@ -7,6 +7,10 @@ import logging
 import uvicorn
 from fastapi import FastAPI
 from prometheus_fastapi_instrumentator import Instrumentator
+from fastapi_cache import FastAPICache
+from fastapi_cache.backends.inmemory import InMemoryBackend
+from fastapi_cache.backends.aiocache import AiocacheBackend
+from aiocache import Cache, caches
 
 from .routes import gists_router, healthchecker_router
 from .settings import get_settings
@@ -26,6 +30,34 @@ def create_app() -> FastAPI:
 
     # Instrumentator: exposes `/metrics` and collects common FastAPI metrics.
     Instrumentator().instrument(app).expose(app)
+
+    async def _init_cache() -> None:
+        """Initialize FastAPICache on application startup.
+
+        Uses the application's settings to decide whether to configure an
+        aiocache Redis backend or fall back to an in-memory backend.
+        """
+        settings = get_settings()
+        prefix = settings.app.redis_users_namespace
+
+        if settings.app.redis_cache_enabled and settings.app.redis_url:
+            # Configure aiocache to use Redis backend with the provided URL
+            caches.set_config(
+                {
+                    "default": {
+                        "cache": "aiocache.RedisCache",
+                        "endpoint": settings.app.redis_url,
+                        "port": 6379,
+                    }
+                }
+            )
+            FastAPICache.init(AiocacheBackend(Cache), prefix=prefix)
+            logger.info("FastAPICache initialized with Redis backend")
+        else:
+            FastAPICache.init(InMemoryBackend(), prefix=prefix)
+            logger.info("FastAPICache initialized with in-memory backend")
+
+    app.add_event_handler("startup", _init_cache)
     return app
 
 
