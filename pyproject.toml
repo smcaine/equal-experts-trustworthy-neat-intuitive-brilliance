@@ -1,0 +1,30 @@
+[tool.black]
+line-length = 88
+target-version = ["py311"]
+include = '\.pyi?$'
+exclude = '''/(
+  \.|env|venv|\.venv|build|dist|\.git
+)/'''
+
+[tool.isort]
+profile = "black"
+line_length = 88
+known_first_party = ["app"]
+known_third_party = [
+  "fastapi",
+  "httpx",
+  "uvicorn",
+  "pydantic",
+  "pydantic_settings",
+  "requests",
+  "pytest",
+  "prometheus_fastapi_instrumentator",
+  "aiocache",
+]
+multi_line_output = 3
+include_trailing_comma = true
+
+[tool.flake8]
+max-line-length = 88
+extend-ignore = ["E203", "W503"]
+exclude = ".venv,build,dist,__pycache__,.git,venv"
